@@ -10,7 +10,9 @@ void main() {
         min(1.0, u_resolution.x / u_resolution.y)
     );
 
-    vec2 pos = texelFetch(u_particles, ivec2(gl_VertexID % 256, gl_VertexID / 256), 0).xy * ratio;
+    int particlesSide = 512;
+
+    vec2 pos = texelFetch(u_particles, ivec2(gl_VertexID % particlesSide, gl_VertexID / particlesSide), 0).xy * ratio;
 
     gl_Position = vec4(pos, 0, 1);
     gl_PointSize = 1.0;
