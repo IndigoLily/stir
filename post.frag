@@ -22,7 +22,7 @@ void main() {
     avg += texelFetch(u_post, p * 2 + ivec2(1, 1), 0);
     avg /= 4.0;
 
-    vec4 old = byte_floor(texelFetch(u_old, p, 0) * 0.9);
+    vec4 old = byte_floor(texelFetch(u_old, p, 0) * sqrt(0.75));
 
     outColor = old + avg;
 }

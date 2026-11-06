@@ -56,18 +56,18 @@ let particlesFront = gl.createTexture();
 let particlesBack = gl.createTexture();
 {
   const data = new Float32Array(particlesSide * particlesSide * 4);
-  let angle, mag;
-  for (let i = 0; i < data.length / 4; i++) {
-    angle = Math.random() * Math.PI * 2;
-    mag = Math.random() ** 0.5 * 0.5;
-    data[i * 4 + 0] = Math.cos(angle) * mag;
-    data[i * 4 + 1] = Math.sin(angle) * mag;
+  //let angle, mag;
+  //for (let i = 0; i < data.length / 4; i++) {
+  //  angle = Math.random() * Math.PI * 2;
+  //  mag = Math.random() ** 0.5 * 0.5;
+  //  data[i * 4 + 0] = Math.cos(angle) * mag;
+  //  data[i * 4 + 1] = Math.sin(angle) * mag;
 
-    angle = Math.random() * Math.PI * 2;
-    mag = Math.random() ** 0.5 * 0.00001;
-    data[i * 4 + 2] = Math.cos(angle) * mag;
-    data[i * 4 + 3] = Math.sin(angle) * mag;
-  }
+  //  angle = Math.random() * Math.PI * 2;
+  //  mag = Math.random() ** 0.5 * 0.00001;
+  //  data[i * 4 + 2] = Math.cos(angle) * mag;
+  //  data[i * 4 + 3] = Math.sin(angle) * mag;
+  //}
   for (const particles of [particlesFront, particlesBack]) {
     gl.bindTexture(gl.TEXTURE_2D, particles);
     gl.texImage2D(
@@ -139,7 +139,7 @@ function draw() {
   gl.useProgram(step);
   gl.bindTexture(gl.TEXTURE_2D, particlesFront);
   gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, particlesBack, 0);
-  gl.uniform1f(timeLoc, Math.log1p(performance.now() / 100000 + 1) * 10);
+  gl.uniform1f(timeLoc, performance.now() / 100000);
   gl.uniform3fv(seedLoc, seed);
   gl.disable(gl.BLEND);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);

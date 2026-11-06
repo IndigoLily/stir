@@ -103,6 +103,29 @@ float snoise(vec3 v, out vec3 gradient)
   return 105.0 * dot(m4, pdotx);
 }
 
+uvec4 pcg4d(uvec4 v) {
+    v = v * 1664525u + 1013904223u;
+
+    v.x += v.y * v.w;
+    v.y += v.z * v.x;
+    v.z += v.x * v.y;
+    v.w += v.y * v.z;
+
+    v ^= v >> 16u;
+
+    v.x += v.y * v.w;
+    v.y += v.z * v.x;
+    v.z += v.x * v.y;
+    v.w += v.y * v.z;
+
+    return v;
+}
+
+vec2 hash24(vec4 p) {
+    uvec4 h = pcg4d(floatBitsToUint(p));   // or uvec4(ivec4(floor(p))) for grid coords
+    return uintBitsToFloat((h.xy >> 9u) | 0x3f800000u) - 1.0;
+}
+
 uniform sampler2D u_particles;
 uniform float u_time;
 uniform vec3 u_seed;
@@ -132,5 +155,8 @@ void main() {
     // drag
     force -= pow(length(particle.zw), 3.0) * particle.zw * 10000000.0;
 
-    outColor = vec4(particle.xy + particle.zw * 4.0, particle.zw + force);
+    // prevents two particles from getting permanently stuck on the exact same path
+    vec2 jitter = (hash24(vec4(particle.xy, coord)) - 0.5) * 0.000001;
+
+    outColor = vec4(particle.xy + particle.zw * 4.0 + jitter, particle.zw + force);
 }
