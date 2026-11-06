@@ -64,7 +64,7 @@ let particlesBack = gl.createTexture();
     data[i * 4 + 1] = Math.sin(angle) * mag;
 
     angle = Math.random() * Math.PI * 2;
-    mag = Math.random() ** 0.5 * 0.000001;
+    mag = Math.random() ** 0.5 * 0.00001;
     data[i * 4 + 2] = Math.cos(angle) * mag;
     data[i * 4 + 3] = Math.sin(angle) * mag;
   }
@@ -139,8 +139,9 @@ function draw() {
   gl.useProgram(step);
   gl.bindTexture(gl.TEXTURE_2D, particlesFront);
   gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, particlesBack, 0);
-  gl.uniform1f(timeLoc, Math.log1p(performance.now() / 100000) * 10);
+  gl.uniform1f(timeLoc, Math.log1p(performance.now() / 100000 + 1) * 10);
   gl.uniform3fv(seedLoc, seed);
+  gl.disable(gl.BLEND);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
   [particlesFront, particlesBack] = [particlesBack, particlesFront];
@@ -157,6 +158,8 @@ function draw() {
   gl.uniform2f(resLoc, cnv.width, cnv.height);
   gl.clearColor(0, 0, 0, 1);
   gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
   gl.drawArrays(gl.POINTS, 0, particlesSide * particlesSide);
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);

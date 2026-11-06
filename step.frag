@@ -115,12 +115,12 @@ out vec4 outColor;
 void main() {
     vec4 particle = texture(u_particles, coord);
 
-    float scale = 1.0;
+    float scale = 1.5;
 
-    vec3 dir = vec3(0.0);
+    vec3 dir = vec3(0, 0, 0);
     snoise(vec3(particle.xy * scale, u_time) + u_seed, dir);
 
-    vec2 force = vec2(0.0, 0.0);
+    vec2 force = vec2(0, 0);
 
     // noise
     vec3 dummy;
