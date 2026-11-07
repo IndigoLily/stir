@@ -6,7 +6,7 @@ out vec4 outColor;
  
 void main() {
     // max alpha
-    float m = 0.1;
+    float m = 1.0 / 512.0;
 
     // scales gaussian so all representable values fit inside point
     float a = 4.0 * log(1.0 / 256.0 / m);

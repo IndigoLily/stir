@@ -150,7 +150,7 @@ void main() {
     force += dir.xy * pow(snoise(vec3(particle.xy * scale, -u_time) + u_seed, dummy), 2.0) * 0.00001;
 
     // centering
-    force -= particle.xy * ((pow(10.0, length(particle.xy)) - 1.0) * 0.000002);
+    force -= particle.xy * ((pow(10.0, length(particle.xy)) - 1.0) * 0.000001);
 
     // drag
     force -= pow(length(particle.zw), 3.0) * particle.zw * 10000000.0;
