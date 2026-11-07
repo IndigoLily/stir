@@ -1,3 +1,4 @@
+"use strict";
 const cnv = document.body.appendChild(document.createElement("canvas"));
 const gl = cnv.getContext("webgl2", {
   alpha: false,
@@ -9,9 +10,8 @@ const gl = cnv.getContext("webgl2", {
 });
 const cbf = gl.getExtension("EXT_color_buffer_float");
 const fbl = gl.getExtension("EXT_float_blend");
-console.log(fbl);
 
-const particlesSide = 512;
+let particlesSide = 512;
 
 function resizeCanvasToDisplaySize(cnv) {
   // Lookup the size the browser is displaying the canvas in CSS pixels.
@@ -58,8 +58,8 @@ const [pointsVert, pointsFrag, rectVert, stepFrag, trailFrag, finalFrag] = await
 
 // calculate the next position and velocity of the particles
 const step = createProgram(gl, compileShader(gl, rectVert, gl.VERTEX_SHADER), compileShader(gl, stepFrag, gl.FRAGMENT_SHADER));
-const timeLoc = gl.getUniformLocation(step, "u_time");
-const seedLoc = gl.getUniformLocation(step, "u_seed");
+const u_time = gl.getUniformLocation(step, "u_time");
+const u_seed = gl.getUniformLocation(step, "u_seed");
 const stepFB = gl.createFramebuffer();
 
 let particles1 = gl.createTexture();
@@ -112,8 +112,8 @@ gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
 // adds the current points to the trail
 const trail = createProgram(gl, compileShader(gl, rectVert, gl.VERTEX_SHADER), compileShader(gl, trailFrag, gl.FRAGMENT_SHADER));
-const trailLoc = gl.getUniformLocation(trail, "u_trail");
-const pointsLoc = gl.getUniformLocation(trail, "u_points");
+const u_trail = gl.getUniformLocation(trail, "u_trail");
+const u_points = gl.getUniformLocation(trail, "u_points");
 const trailFB = gl.createFramebuffer();
 let [trailTexture1, trailTexture2] = [gl.createTexture(), gl.createTexture()].map(t => {
   gl.bindTexture(gl.TEXTURE_2D, t);
@@ -151,8 +151,8 @@ function draw() {
   gl.disable(gl.BLEND);
   gl.viewport(0, 0, particlesSide, particlesSide);
   gl.bindTexture(gl.TEXTURE_2D, particles1);
-  gl.uniform1f(timeLoc, performance.now() / 100000);
-  gl.uniform3fv(seedLoc, seed);
+  gl.uniform1f(u_time, performance.now() / 100000);
+  gl.uniform3fv(u_seed, seed);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
   [particles1, particles2] = [particles2, particles1];
@@ -185,10 +185,10 @@ function draw() {
   gl.clear(gl.COLOR_BUFFER_BIT);
   gl.activeTexture(gl.TEXTURE1);
   gl.bindTexture(gl.TEXTURE_2D, pointsTexture);
-  gl.uniform1i(pointsLoc, 1);
+  gl.uniform1i(u_points, 1);
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D, trailTexture2);
-  gl.uniform1i(trailLoc, 0);
+  gl.uniform1i(u_trail, 0);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
   gl.useProgram(final);

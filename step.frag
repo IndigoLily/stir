@@ -137,26 +137,28 @@ out vec4 outColor;
 
 void main() {
     vec4 particle = texture(u_particles, coord);
+    vec2 pos = particle.xy;
+    vec2 vel = particle.zw;
 
     float scale = 1.5;
 
     vec3 dir = vec3(0, 0, 0);
-    snoise(vec3(particle.xy * scale, u_time) + u_seed, dir);
+    snoise(vec3(pos * scale, u_time) + u_seed, dir);
 
     vec2 force = vec2(0, 0);
 
     // noise
     vec3 dummy;
-    force += dir.xy * pow(snoise(vec3(particle.xy * scale, -u_time) + u_seed, dummy), 2.0) * 0.00001;
+    force += dir.xy * pow(snoise(vec3(pos * scale, -u_time) + u_seed, dummy), 2.0) * 0.00001;
 
     // centering
-    force -= particle.xy * ((pow(10.0, length(particle.xy)) - 1.0) * 0.000001);
+    force -= pos * ((pow(10.0, length(pos)) - 1.0) * 0.000001);
 
     // drag
-    force -= pow(length(particle.zw), 3.0) * particle.zw * 10000000.0;
+    force -= pow(length(vel), 3.0) * vel * 10000000.0;
 
     // prevents two particles from getting permanently stuck on the exact same path
-    vec2 jitter = (hash24(vec4(particle.xy, coord)) - 0.5) * 0.000001;
+    vec2 jitter = (hash24(vec4(pos, coord)) - 0.5) * 0.000001;
 
-    outColor = vec4(particle.xy + particle.zw * 4.0 + jitter, particle.zw + force);
+    outColor = vec4(pos + vel * 4.0 + jitter, vel + force);
 }
