@@ -15,5 +15,5 @@ void main() {
     vec2 pos = texelFetch(u_particles, ivec2(gl_VertexID % particlesSide, gl_VertexID / particlesSide), 0).xy * ratio;
 
     gl_Position = vec4(pos, 0, 1);
-    gl_PointSize = 2.0;
+    gl_PointSize = max(2.0, min(u_resolution.x, u_resolution.y) / 360.0);
 }

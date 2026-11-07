@@ -7,6 +7,6 @@ out vec4 outColor;
 
 void main() {
     float l = texelFetch(u_trail, ivec2(gl_FragCoord.xy), 0).r;
-    l = pow(tanh(pow(l, 0.5) * 0.75), 1.5);
+    l = pow(tanh(pow(l, 0.5) * 0.75), 2.0);
     outColor = vec4(l, l, l, 1);
 }
