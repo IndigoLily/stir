@@ -11,7 +11,7 @@ const gl = cnv.getContext("webgl2", {
 const cbf = gl.getExtension("EXT_color_buffer_float");
 const fbl = gl.getExtension("EXT_float_blend");
 
-let particlesSide = 512;
+let particlesSide = 768;
 
 function resizeCanvasToDisplaySize(cnv) {
   // Lookup the size the browser is displaying the canvas in CSS pixels.
@@ -60,24 +60,26 @@ const [pointsVert, pointsFrag, rectVert, stepFrag, trailFrag, finalFrag] = await
 const step = createProgram(gl, compileShader(gl, rectVert, gl.VERTEX_SHADER), compileShader(gl, stepFrag, gl.FRAGMENT_SHADER));
 const u_time = gl.getUniformLocation(step, "u_time");
 const u_seed = gl.getUniformLocation(step, "u_seed");
+const u_burst = gl.getUniformLocation(step, "u_burst");
+const u_middle = gl.getUniformLocation(step, "u_middle");
 const stepFB = gl.createFramebuffer();
 
 let particles1 = gl.createTexture();
 let particles2 = gl.createTexture();
 {
   const data = new Float32Array(particlesSide * particlesSide * 4);
-  let angle, mag;
-  for (let i = 0; i < data.length / 4; i++) {
-    //angle = Math.random() * Math.PI * 2;
-    //mag = Math.random() ** 0.5 * 0.5;
-    //data[i * 4 + 0] = Math.cos(angle) * mag;
-    //data[i * 4 + 1] = Math.sin(angle) * mag;
+  //let angle, mag;
+  //for (let i = 0; i < data.length / 4; i++) {
+  //  angle = Math.random() * Math.PI * 2;
+  //  mag = Math.random() ** 0.5 * 0.5;
+  //  data[i * 4 + 0] = Math.cos(angle) * mag;
+  //  data[i * 4 + 1] = Math.sin(angle) * mag;
 
-    angle = Math.random() * Math.PI * 2;
-    mag = Math.random() ** 0.5 * 0.00001;
-    data[i * 4 + 2] = Math.cos(angle) * mag;
-    data[i * 4 + 3] = Math.sin(angle) * mag;
-  }
+  //  angle = Math.random() * Math.PI * 2;
+  //  mag = Math.random() ** 0.5 * 0.00001;
+  //  data[i * 4 + 2] = Math.cos(angle) * mag;
+  //  data[i * 4 + 3] = Math.sin(angle) * mag;
+  //}
   for (const particles of [particles1, particles2]) {
     gl.bindTexture(gl.TEXTURE_2D, particles);
     gl.texImage2D(
@@ -99,8 +101,8 @@ let particles2 = gl.createTexture();
 }
 
 // draws the current state of the points
-const points = createProgram(gl, compileShader(gl, pointsVert, gl.VERTEX_SHADER), compileShader(gl, pointsFrag, gl.FRAGMENT_SHADER));
-const resLoc = gl.getUniformLocation(points, "u_resolution");
+const points = createProgram(gl, compileShader(gl, pointsVert.replaceAll(/\$particlesSide\$/g, particlesSide), gl.VERTEX_SHADER), compileShader(gl, pointsFrag, gl.FRAGMENT_SHADER));
+const u_res = gl.getUniformLocation(points, "u_res");
 const pointsFB = gl.createFramebuffer();
 const pointsTexture = gl.createTexture();
 gl.bindTexture(gl.TEXTURE_2D, pointsTexture);
@@ -136,23 +138,50 @@ function reseed() {
     Math.random() * 2000 - 1000,
   ]);
 }
+
+let burst = false;
+let middle = false;
+let pause = false;
+
 window.addEventListener("keydown", ({ code }) => {
   if (code === "KeyR") {
     reseed();
+  } else if (code === "KeyB") {
+    burst = true;
+  } else if (code === "KeyM") {
+    middle = true;
+  } else if (code === "KeyP") {
+    pause = !pause;
+  }
+});
+
+window.addEventListener("keyup", ({ code }) => {
+  if (code === "KeyB") {
+    burst = false;
+  } else if (code === "KeyM") {
+    middle = false;
   }
 });
 
 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
+let frame = 0;
+
 function draw() {
+  let t = frame / 50000;
+  t += 0.5 * Math.sin(t);
+  if (!pause) frame += 1;
+
   gl.useProgram(step);
   gl.bindFramebuffer(gl.FRAMEBUFFER, stepFB);
   gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, particles2, 0);
   gl.disable(gl.BLEND);
   gl.viewport(0, 0, particlesSide, particlesSide);
   gl.bindTexture(gl.TEXTURE_2D, particles1);
-  gl.uniform1f(u_time, performance.now() / 100000);
+  gl.uniform1f(u_time, t);
   gl.uniform3fv(u_seed, seed);
+  gl.uniform1i(u_burst, burst);
+  gl.uniform1i(u_middle, middle);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
   [particles1, particles2] = [particles2, particles1];
@@ -173,7 +202,7 @@ function draw() {
   gl.clearColor(0, 0, 0, 0);
   gl.clear(gl.COLOR_BUFFER_BIT);
   gl.bindTexture(gl.TEXTURE_2D, particles1);
-  gl.uniform2f(resLoc, cnv.width, cnv.height);
+  gl.uniform2f(u_res, cnv.width, cnv.height);
   gl.drawArrays(gl.POINTS, 0, particlesSide * particlesSide);
   gl.disable(gl.BLEND);
 
